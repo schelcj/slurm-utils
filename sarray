@@ -5,6 +5,9 @@ use File::Slurp qw(read_file);
 use System::Command;
 use Readonly;
 
+Readonly::Scalar my $HYPHEN                  => q{-};
+Readonly::Scalar my $COMMA                   => q{,};
+Readonly::Scalar my $EMPTY                   => q{};
 Readonly::Scalar my $SBATCH_CMD              => q{sbatch};
 Readonly::Scalar my $SARRAY_RANGE_REGEXP     => qr{#SARRAY\s+\-\-range\s*=\s*([\d,-]+)};
 Readonly::Scalar my $SARRAY_JOBNAME_REGEXP   => qr{#SBATCH\s+\-(\-job\-name|J)\s*=\s*([[:print:]]+)};
@@ -12,9 +15,9 @@ Readonly::Scalar my $SARRAY_JOBNAME_FORMAT   => q{%s[%d]};
 Readonly::Scalar my $SARRAY_ENV              => q{SLURM_ARRAYID};
 Readonly::Scalar my $SARRAY_DEFAULT_JOB_NAME => q{sarray};
 
-my $batch     = read_file($ARGV[0]);
-my @tasks_ids = get_task_ids($batch);
-my $job_name  = get_batch_job_name($batch_job);
+my $batch    = read_file($ARGV[0]);
+my @task_ids = get_task_ids($batch);
+my $job_name = get_batch_job_name($batch);
 
 foreach my $task_id (@task_ids) {
   my $name = sprintf $SARRAY_JOBNAME_FORMAT, $job_name, $task_id;
@@ -22,7 +25,7 @@ foreach my $task_id (@task_ids) {
               ($SBATCH_CMD, qq{--job-name=$name}),
               {
                 env   => {SLURM_ARRAYID => $task_id},
-                input => $batch_job,
+                input => $batch,
               }
             );
 

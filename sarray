@@ -87,3 +87,17 @@ Copyright (C) 2011, all rights reserved by University of Michigan
 =head1 AUTHOR
 
 Chris Scheller <schelcj@umich.edu>
+
+=head1 TODO
+
+=over
+
+=item * finish pod
+
+=item * validate generated job name
+
+=item * validate batch file passed on commandline
+
+=item * test regexps aren't to greedy
+
+=back

@@ -79,3 +79,11 @@ sub get_batch_job_name {
 }
 
 __END__
+
+=head1 COPYRIGHT
+
+Copyright (C) 2011, all rights reserved by University of Michigan
+
+=head1 AUTHOR
+
+Chris Scheller <schelcj@umich.edu>

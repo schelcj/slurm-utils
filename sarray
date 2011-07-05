@@ -10,7 +10,7 @@ Readonly::Scalar my $COMMA                   => q{,};
 Readonly::Scalar my $EMPTY                   => q{};
 Readonly::Scalar my $SBATCH_CMD              => q{sbatch};
 Readonly::Scalar my $SARRAY_RANGE_REGEXP     => qr{#SARRAY\s+\-\-range\s*=\s*([\d,-]+)};
-Readonly::Scalar my $SARRAY_JOBNAME_REGEXP   => qr{#SBATCH\s+\-(\-job\-name|J)\s*=\s*([[:print:]]+)};
+Readonly::Scalar my $SARRAY_JOBNAME_REGEXP   => qr{#SBATCH\s+\-(?:\-job\-name|J)\s*=\s*([[:print:]]+)};
 Readonly::Scalar my $SARRAY_JOBNAME_FORMAT   => q{%s[%d]};
 Readonly::Scalar my $SARRAY_ENV              => q{SLURM_ARRAYID};
 Readonly::Scalar my $SARRAY_DEFAULT_JOB_NAME => q{sarray};

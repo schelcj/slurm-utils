@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+
+use Modern::Perl;
+use File::Slurp qw(read_file);
+use System::Command;
+use Readonly;
+
+Readonly::Scalar my $SBATCH_CMD              => q{sbatch};
+Readonly::Scalar my $SARRAY_RANGE_REGEXP     => qr{#SARRAY\s+\-\-range\s*=\s*([\d,-]+)};
+Readonly::Scalar my $SARRAY_JOBNAME_REGEXP   => qr{#SBATCH\s+\-(\-job\-name|J)\s*=\s*([[:print:]]+)};
+Readonly::Scalar my $SARRAY_JOBNAME_FORMAT   => q{%s[%d]};
+Readonly::Scalar my $SARRAY_ENV              => q{SLURM_ARRAYID};
+Readonly::Scalar my $SARRAY_DEFAULT_JOB_NAME => q{sarray};
+
+my $batch     = read_file($ARGV[0]);
+my @tasks_ids = get_task_ids($batch);
+my $job_name  = get_batch_job_name($batch_job);
+
+foreach my $task_id (@task_ids) {
+  my $name = sprintf $SARRAY_JOBNAME_FORMAT, $job_name, $task_id;
+  my $cmd  = System::Command->new(
+              ($SBATCH_CMD, qq{--job-name=$name}),
+              {
+                env   => {SLURM_ARRAYID => $task_id},
+                input => $batch_job,
+              }
+            );
+
+  my $stdout = $cmd->stdout();
+  while (<$stdout>) {
+    print $_;
+  }
+  $cmd->close();
+}
+
+sub get_task_ids {
+  my ($batch_job) = @_;
+  my @task_ids    = ();
+  my @ids         = ();
+  my $tasks       = $EMPTY;
+
+  while ($batch_job =~ m/$SARRAY_RANGE_REGEXP/sg) {
+    $tasks = $1;
+  }
+
+  if ($tasks =~ /$COMMA/) {
+    @ids = split(/$COMMA/, $tasks);
+  } else {
+    push @ids, $tasks;
+  }
+
+  foreach my $id (@ids) {
+    if ($id =~ /$HYPHEN/) {
+      my ($start,$end) = split(/$HYPHEN/,$id);
+
+      for my $i ($start..$end) {
+        push @task_ids, $i;
+      }
+    } else {
+      push @task_ids, $id;
+    }
+  }
+
+  return @task_ids;
+}
+
+sub get_batch_job_name {
+  my ($batch_job) = @_;
+  my $job_name    = $SARRAY_DEFAULT_JOB_NAME;
+
+  while ($batch_job =~ m/$SARRAY_JOBNAME_REGEXP/sg) {
+    $job_name = $1;
+  }
+
+  return $job_name;
+}
+
+__END__

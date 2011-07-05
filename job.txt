@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=user@domain.com
+#SBATCH --job-name=sarray_test
+#SBATCH --time=1-0
+#SARRAY --range=1-10,20-30
+
+srun testload -t $((${SLURM_ARRAYID} + 60))

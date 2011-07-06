@@ -9,7 +9,7 @@ Readonly::Scalar my $HYPHEN                  => q{-};
 Readonly::Scalar my $COMMA                   => q{,};
 Readonly::Scalar my $EMPTY                   => q{};
 Readonly::Scalar my $SBATCH_CMD              => q{sbatch};
-Readonly::Scalar my $SARRAY_RANGE_REGEXP     => qr{#SARRAY\s+\-\-range\s*=\s*([\d,-]+)};
+Readonly::Scalar my $SARRAY_RANGE_REGEXP     => qr{#SARRAY\s+\-\-range\s*=\s*([\d,\s-]+)};
 Readonly::Scalar my $SARRAY_JOBNAME_REGEXP   => qr{#SBATCH\s+\-(?:\-job\-name|J)\s*=\s*([[:print:]]+)};
 Readonly::Scalar my $SARRAY_JOBNAME_FORMAT   => q{%s[%d]};
 Readonly::Scalar my $SARRAY_ENV              => q{SLURM_ARRAYID};
@@ -80,21 +80,63 @@ sub get_batch_job_name {
 
 __END__
 
-=head1 COPYRIGHT
+=head1 NAME
 
-Copyright (C) 2011, all rights reserved by University of Michigan
+sarray
+
+=head1 SYNOPSIS
+
+  $ sarray batch_file.txt
+
+  Example Batch script:
+
+  #!/bin/bash
+
+  #SBATCH --mail-type=ALL
+  #SBATCH --mail-user=user@domain.com
+  #SBATCH --job-name=sarray_test
+  #SBATCH --time=1-0
+  #SARRAY --range=1-10,20-30
+
+  srun testload -t $((${SLURM_ARRAYID} + 60))
+
+=head1 DESCRIPTION
+
+This script is an attempt at providing the array job concept from PBS in SLURM.
+You can run multiple jobs from a single batch script with the only difference in
+each job being the array index. The array index gives the script a means of changing
+parameters, loading differing data files or anything that requires a unique index.
+
+=head1 ARGUMENTS
+
+This script only accepts an batch script suitable for sbatch. The batch script
+must include the comment marker to indicate the range of array indexes. The comment
+is similiar to sbatch comments that must start in column zero of the script. The value
+can be a range seperated by a dash ( - ), a comma seperated list of index numbers or both.
+
+#SARRAY --range=1-20
+
+or
+
+#SARRAY --range=1-10,12,14,16-20
+
+This would create jobs with the id appended to the end of your defined job name with the id
+within brakets such as; jobname[1], jobname[2] ... jobname[20].
+
+The array index is passed back to the batch script as the environment variable $SLURM_ARRAYID for
+each iteration through the index(es) you provided via the --range option.
 
 =head1 AUTHOR
 
 Chris Scheller <schelcj@umich.edu>
 
+=head1 COPYRIGHT
+
+Copyright (C) 2011, all rights reserved by University of Michigan
+
 =head1 TODO
 
 =over
-
-=item * finish pod
-
-=item * validate generated job name
 
 =item * validate batch file passed on commandline
 

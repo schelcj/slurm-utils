@@ -3,31 +3,25 @@
 use Modern::Perl;
 use File::Slurp qw(read_file);
 use System::Command;
-use Readonly;
 
-Readonly::Scalar my $HYPHEN                  => q{-};
-Readonly::Scalar my $COMMA                   => q{,};
-Readonly::Scalar my $EMPTY                   => q{};
-Readonly::Scalar my $SBATCH_CMD              => q{sbatch};
-Readonly::Scalar my $SARRAY_RANGE_REGEXP     => qr{#SARRAY\s+\-\-range\s*=\s*([\d,\s-]+)};
-Readonly::Scalar my $SARRAY_JOBNAME_REGEXP   => qr{#SBATCH\s+\-(?:\-job\-name|J)\s*=\s*([[:print:]]+)};
-Readonly::Scalar my $SARRAY_JOBNAME_FORMAT   => q{%s[%d]};
-Readonly::Scalar my $SARRAY_ENV              => q{SLURM_ARRAYID};
-Readonly::Scalar my $SARRAY_DEFAULT_JOB_NAME => q{sarray};
+my $sbatch_cmd       = q{sbatch};
+my $range_regexp     = qr{#SARRAY\s+\-\-range\s*=\s*([\d,\s-]+)};
+my $jobname_regexp   = qr{#SBATCH\s+\-(?:\-job\-name|J)\s*=\s*([[:print:]]+)};
+my $env_var_name     = q{SLURM_ARRAYID};
+my $default_job_name = q{sarray};
 
 my $batch    = read_file($ARGV[0]);
 my @task_ids = get_task_ids($batch);
 my $job_name = get_batch_job_name($batch);
 
 foreach my $task_id (@task_ids) {
-  my $name = sprintf $SARRAY_JOBNAME_FORMAT, $job_name, $task_id;
+  my $name = sprintf q{%s[%d]}, $job_name, $task_id;
   my $cmd  = System::Command->new(
-              ($SBATCH_CMD, qq{--job-name=$name}),
-              {
-                env   => {SLURM_ARRAYID => $task_id},
-                input => $batch,
-              }
-            );
+    ($sbatch_cmd, qq{--job-name=$name}), {
+      env   => {$env_var_name => $task_id},
+      input => $batch,
+    }
+  );
 
   my $stdout = $cmd->stdout();
   while (<$stdout>) {
@@ -40,23 +34,23 @@ sub get_task_ids {
   my ($batch_job) = @_;
   my @task_ids    = ();
   my @ids         = ();
-  my $tasks       = $EMPTY;
+  my $tasks       = q{};
 
-  while ($batch_job =~ m/$SARRAY_RANGE_REGEXP/sg) {
+  while ($batch_job =~ m/$range_regexp/sg) {
     $tasks = $1;
   }
 
-  if ($tasks =~ /$COMMA/) {
-    @ids = split(/$COMMA/, $tasks);
+  if ($tasks =~ /,/) {
+    @ids = split(/,/, $tasks);
   } else {
     push @ids, $tasks;
   }
 
   foreach my $id (@ids) {
-    if ($id =~ /$HYPHEN/) {
-      my ($start,$end) = split(/$HYPHEN/,$id);
+    if ($id =~ /-/) {
+      my ($start, $end) = split(/-/, $id);
 
-      for my $i ($start..$end) {
+      for my $i ($start .. $end) {
         push @task_ids, $i;
       }
     } else {
@@ -69,9 +63,9 @@ sub get_task_ids {
 
 sub get_batch_job_name {
   my ($batch_job) = @_;
-  my $job_name    = $SARRAY_DEFAULT_JOB_NAME;
+  my $job_name = $default_job_name;
 
-  while ($batch_job =~ m/$SARRAY_JOBNAME_REGEXP/sg) {
+  while ($batch_job =~ m/$jobname_regexp/sg) {
     $job_name = $1;
   }
 

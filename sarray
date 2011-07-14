@@ -32,7 +32,7 @@ foreach my $task_id (@task_ids) {
 
 sub get_task_ids {
   my ($batch_job) = @_;
-  my @task_ids    = ();
+  my @tasks       = ();
   my @ids         = ();
   my $tasks       = q{};
 
@@ -51,25 +51,25 @@ sub get_task_ids {
       my ($start, $end) = split(/-/, $id);
 
       for my $i ($start .. $end) {
-        push @task_ids, $i;
+        push @tasks, $i;
       }
     } else {
-      push @task_ids, $id;
+      push @tasks, $id;
     }
   }
 
-  return @task_ids;
+  return @tasks;
 }
 
 sub get_batch_job_name {
   my ($batch_job) = @_;
-  my $job_name = $default_job_name;
+  my $name        = $default_job_name;
 
   while ($batch_job =~ m/$jobname_regexp/sg) {
-    $job_name = $1;
+    $name = $1;
   }
 
-  return $job_name;
+  return $name;
 }
 
 __END__
@@ -101,7 +101,13 @@ You can run multiple jobs from a single batch script with the only difference in
 each job being the array index. The array index gives the script a means of changing
 parameters, loading differing data files or anything that requires a unique index.
 
-=head1 ARGUMENTS
+=head1 USAGE
+
+  sarray batch_file
+
+  $ sarray ./job.txt
+
+=head1 REQUIRED ARGUMENTS
 
 This script only accepts an batch script suitable for sbatch. The batch script
 must include the comment marker to indicate the range of array indexes. The comment
@@ -120,13 +126,40 @@ within brakets such as; jobname[1], jobname[2] ... jobname[20].
 The array index is passed back to the batch script as the environment variable $SLURM_ARRAYID for
 each iteration through the index(es) you provided via the --range option.
 
-=head1 AUTHOR
+=head1 OPTIONS
 
-Chris Scheller <schelcj@umich.edu>
+None
 
-=head1 COPYRIGHT
+=head1 CONFIGURATION
 
-Copyright (C) 2011, all rights reserved by University of Michigan
+None
+
+=head1 DIAGNOSTICS
+
+None
+
+=head1 EXIT STATUS
+
+
+=head1 DEPENDENCIES
+
+=over
+
+=item Modern::Perl
+
+=item File::Slurp
+
+=item System::Command
+
+=back
+
+=head1 BUGS AND LIMITATIONS
+
+None known at this time.
+
+=head1 INCOMPATIBILITIES
+
+None Known at this time.
 
 =head1 TODO
 
@@ -137,3 +170,12 @@ Copyright (C) 2011, all rights reserved by University of Michigan
 =item * test regexps aren't to greedy
 
 =back
+
+=head1 AUTHOR
+
+Chris Scheller <schelcj@umich.edu>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2011, all rights reserved by University of Michigan
+

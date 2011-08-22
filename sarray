@@ -3,6 +3,10 @@
 use Modern::Perl;
 use File::Slurp qw(read_file);
 use System::Command;
+use Getopt::Std;
+
+my $opts = {};
+getopts('J',$opts);
 
 my $sbatch_cmd       = q{sbatch};
 my $range_regexp     = qr{#SARRAY\s+\-\-range\s*=\s*([\d,\s-]+)};
@@ -15,7 +19,7 @@ my @task_ids = get_task_ids($batch);
 my $job_name = get_batch_job_name($batch);
 
 foreach my $task_id (@task_ids) {
-  my $name = sprintf q{%s[%d]}, $job_name, $task_id;
+  my $name = generate_job_name($job_name, $task_id);
   my $cmd  = System::Command->new(
     ($sbatch_cmd, qq{--job-name=$name}), {
       env   => {$env_var_name => $task_id},
@@ -72,6 +76,13 @@ sub get_batch_job_name {
   return $name;
 }
 
+sub generate_job_name {
+  my ($name, $id) = @_;
+  my $format      = ($opts->{J}) ? q{%s} : q{%s[%d]};
+
+  return sprintf $format, $name, $id;
+}
+
 __END__
 
 =head1 NAME
@@ -106,13 +117,14 @@ parameters, loading differing data files or anything that requires a unique inde
   sarray batch_file
 
   $ sarray ./job.txt
+  $ sarray -J ./job.txt
 
 =head1 REQUIRED ARGUMENTS
 
 This script only accepts an batch script suitable for sbatch. The batch script
 must include the comment marker to indicate the range of array indexes. The comment
 is similiar to sbatch comments that must start in column zero of the script. The value
-can be a range seperated by a dash ( - ), a comma seperated list of index numbers or both.
+can be a range separated by a dash ( - ), a comma separated list of index numbers or both.
 
 #SARRAY --range=1-20
 
@@ -121,14 +133,14 @@ or
 #SARRAY --range=1-10,12,14,16-20
 
 This would create jobs with the id appended to the end of your defined job name with the id
-within brakets such as; jobname[1], jobname[2] ... jobname[20].
+within brackets such as; jobname[1], jobname[2] ... jobname[20].
 
 The array index is passed back to the batch script as the environment variable $SLURM_ARRAYID for
 each iteration through the index(es) you provided via the --range option.
 
 =head1 OPTIONS
 
-None
+=item B<-J>      Do not modify the job name
 
 =head1 CONFIGURATION
 

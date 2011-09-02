@@ -78,9 +78,7 @@ sub get_batch_job_name {
 
 sub generate_job_name {
   my ($name, $id) = @_;
-  my $format      = ($opts->{J}) ? q{%s} : q{%s[%d]};
-
-  return sprintf $format, $name, $id;
+  return ($opts->{J}) ? $name : sprintf q{%s[%d]}, $name, $id;
 }
 
 __END__

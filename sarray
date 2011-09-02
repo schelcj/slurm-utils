@@ -140,7 +140,11 @@ each iteration through the index(es) you provided via the --range option.
 
 =head1 OPTIONS
 
+=over
+
 =item B<-J>      Do not modify the job name
+
+=back
 
 =head1 CONFIGURATION
 

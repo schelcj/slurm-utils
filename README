@@ -3,36 +3,5 @@ You can run multiple jobs from a single batch script with the only difference in
 each job being the array index. The array index gives the script a means of changing
 parameters, loading differing data files or anything that requires a unique index.
 
-This script only accepts an batch script suitable for sbatch. The batch script
-must include the comment marker to indicate the range of array indexes. The comment
-is similiar to sbatch comments that must start in column zero of the script. The value
-can be a range seperated by a dash ( - ), a comma seperated list of index numbers or both.
-
-#SARRAY --range=1-20
-
-or
-
-#SARRAY --range=1-10,12,14,16-20
-
-This would create jobs with the id appended to the end of your defined job name with the id
-within brakets such as; jobname[1], jobname[2] ... jobname[20].
-
-The array index is passed back to the batch script as the environment variable $SLURM_ARRAYID for
-each iteration through the index(es) you provided via the --range option.
-
-$ cat batch_file.txt
-
-#!/bin/bash
-
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=user@domain.com
-#SBATCH --job-name=sarray_test
-#SBATCH --time=1-0
-#SARRAY --range=1-10,20-30
-
-srun testload -t $((${SLURM_ARRAYID} + 60))
-
-$ sarray ./batch_file.txt
-
 Chris Scheller <schelcj@umich.edu>
 Copyright (C) 2011, all rights reserved by University of Michigan

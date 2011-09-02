@@ -3,10 +3,13 @@
 use Modern::Perl;
 use File::Slurp qw(read_file);
 use System::Command;
-use Getopt::Std;
+use Getopt::Compact;
 
-my $opts = {};
-getopts('J',$opts);
+my $opts = Getopt::Compact->new(
+  struct => [
+      [[qw(J maintain-job-name)], q(Maintain unmodified job name)],
+  ]
+)->opts();
 
 my $sbatch_cmd       = q{sbatch};
 my $range_regexp     = qr{#SARRAY\s+\-\-range\s*=\s*([\d,\s-]+)};
@@ -78,7 +81,7 @@ sub get_batch_job_name {
 
 sub generate_job_name {
   my ($name, $id) = @_;
-  return ($opts->{J}) ? $name : sprintf q{%s[%d]}, $name, $id;
+  return ($opts->{'maintain-job-name'}) ? $name : sprintf q{%s[%d]}, $name, $id;
 }
 
 __END__

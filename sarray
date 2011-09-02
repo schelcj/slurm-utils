@@ -4,6 +4,7 @@ use Modern::Perl;
 use File::Slurp qw(read_file);
 use System::Command;
 use Getopt::Compact;
+use Carp qw(confess);
 
 my $opts = Getopt::Compact->new(
   struct => [
@@ -46,6 +47,8 @@ sub get_task_ids {
   while ($batch_job =~ m/$range_regexp/sg) {
     $tasks = $1;
   }
+
+  confess 'Unable to determine array range from batch file' if not $tasks;
 
   if ($tasks =~ /,/) {
     @ids = split(/,/, $tasks);

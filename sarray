@@ -5,6 +5,7 @@ use File::Slurp qw(read_file);
 use System::Command;
 use Getopt::Compact;
 use Carp qw(confess);
+use List::MoreUtils qw(apply);
 
 my $opts = Getopt::Compact->new(
   struct => [
@@ -68,7 +69,7 @@ sub get_task_ids {
     }
   }
 
-  return @tasks;
+  return apply {$_ =~ s/^(?:[\r\n\s]+)|(?:[\r\n\s]+)$//g} @tasks;
 }
 
 sub get_batch_job_name {

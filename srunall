@@ -26,17 +26,73 @@ while ($batch_file =~ m/$jobname_regexp/sg) {
 }
 
 for my $i (1 .. scalar @cmds) {
-  my $pos = $i - 1;
-
-  chomp(my $line = $cmds[$pos]);
+  chomp(my $line = $cmds[$i - 1]);
 
   my $name  = sprintf q{%s[%d]}, $job_name, $i;
-  my $batch = sprintf qq{%s\necho "%s"\nsrun %s}, $batch_file, $line, $line;
+  my $batch = sprintf qq{%s\necho "%s"\nsrun %s\n}, $batch_file, $line, $line;
   my $cmd   = System::Command->new(($sbatch_cmd, qq{--job-name=$name}), {input => $batch});
 
   my $stdout = $cmd->stdout();
-  while (<$stdout>) {
-    print $_;
-  }
+  while (<$stdout>) { print $_; }
   $cmd->close();
 }
+
+__END__
+
+=head1 NAME
+
+srunall
+
+=head1 SYNOPSIS
+
+  $ srunall --batch-file ./job.txt --cmd-file ./cmds.txt
+
+=head1 DESCRIPTION
+
+=head1 USAGE
+
+=head1 REQUIRED ARGUMENTS
+
+=head1 OPTIONS
+
+=head1 CONFIGURATION
+
+None
+
+=head1 DIAGNOSTICS
+
+None
+
+=head1 EXIT STATUS
+
+
+=head1 DEPENDENCIES
+
+=over 4
+
+=item Modern::Perl
+
+=item File::Slurp
+
+=item System::Command
+
+=item Getopt::Compact
+
+=back
+
+=head1 BUGS AND LIMITATIONS
+
+None known at this time.
+
+=head1 INCOMPATIBILITIES
+
+None Known at this time.
+
+=head1 AUTHOR
+
+Chris Scheller <schelcj@umich.edu>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (C) 2011, all rights reserved by University of Michigan
+

@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+
+use Modern::Perl;
+use File::Slurp qw(read_file);
+use System::Command;
+use Getopt::Compact;
+
+my $opts = Getopt::Compact->new(
+  struct => [
+    [[qw(b batch-file)], q(File containing batch commands ie; #SBATCH),    '=s'],
+    [[qw(c cmd-file)],   q(File containing commands to run, one per line), '=s'],
+  ]
+)->opts();
+
+my $sbatch_cmd       = q{sbatch};
+my $default_job_name = q{srunall};
+my $jobname_regexp   = qr{#SBATCH\s+\-(?:\-job\-name|J)\s*=\s*([[:print:]]+)};
+
+my $batch_file = read_file($opts->{'batch-file'});
+my @cmds       = read_file($opts->{'cmd-file'});
+my $job_name   = q{srunall};
+
+while ($batch_file =~ m/$jobname_regexp/sg) {
+  $job_name = $1;
+  last;
+}
+
+for my $i (1 .. scalar @cmds) {
+  my $pos = $i - 1;
+
+  chomp(my $line = $cmds[$pos]);
+
+  my $name  = sprintf q{%s[%d]}, $job_name, $i;
+  my $batch = sprintf qq{%s\necho "%s"\nsrun %s}, $batch_file, $line, $line;
+  my $cmd   = System::Command->new(($sbatch_cmd, qq{--job-name=$name}), {input => $batch});
+
+  my $stdout = $cmd->stdout();
+  while (<$stdout>) {
+    print $_;
+  }
+  $cmd->close();
+}

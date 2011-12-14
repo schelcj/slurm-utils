@@ -20,6 +20,14 @@ function slurm_job_submit ( job_desc, part_list )
   return 0
 end
 
+function slurm_job_modify ( job_desc, job_rec, part_list )
+  setmetatable (job_desc, job_req_meta)
+  setmetatable (job_rec,  job_rec_meta)
+  local part_rec = _build_part_table (part_list)
+
+  return 0
+end
+
 log_info = slurm.log_info
 log_verbose = slurm.log_verbose
 log_debug = slurm.log_debug

@@ -1,0 +1,3 @@
+#!/bin/bash
+#SBATCH --job-name=srunall_test
+#SBATCH --time=1-0

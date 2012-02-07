@@ -15,6 +15,10 @@ Various Slurm utilities and plugins.
   * job_submit.bigmem.lua
     Plugin to enforce minimum memory allocations in the bigmem partition
 
+* misc
+  * profile-slurm.sh
+    Just a few bash functions I include in my login env to pull out some
+    data that isn't directly accessible.
 
 Chris Scheller <schelcj@umich.edu>
 Copyright (C) 2011, all rights reserved by University of Michigan

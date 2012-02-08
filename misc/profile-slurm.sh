@@ -23,7 +23,7 @@ function get_total_cores_for_node() {
 
 function get_allocated_cores_for_node() {
   local node=$1
-  echo $(scontrol -o show node $1|cut -d\  -f4|cut -d\= -f2)
+  echo $(scontrol -o show node $node|cut -d\  -f4|cut -d\= -f2)
 }
 
 function get_total_memory_for_node() {
@@ -43,21 +43,21 @@ function get_allocated_memory_for_node() {
 }
 
 function show_jobs_for_user() {
-  local user="$1"
+  local user=$1
   for i in $(squeue -h -u $user -o %i); do
     scontrol -d show job $i
   done
 }
 
 function show_jobs_for_node() {
-  local node="$1"
+  local node=$1
   for i in $(squeue -h -n $node -o %i); do
     scontrol -d show job $i
   done
 }
 
 function show_jobs_for_part() {
-  local part="$1"
+  local part=$1
   for i in $(squeue -n -p $part -o %i); do
     scontrol -d show job $i
   done
@@ -71,11 +71,9 @@ function hold_jobs_for_user() {
 }
 
 function show_core_alloc() {
-  local nodes=($(get_nodes))
-
   _show_alloc_header
 
-  for node in "${nodes[@]}"; do
+  for node in $(get_nodes); do
     _show_alloc_result $node $(get_allocated_cores_for_node $node) $(get_total_cores_for_node $node)
   done
 }
@@ -88,11 +86,9 @@ function show_core_alloc_for_node() {
 }
 
 function show_mem_alloc() {
-  local nodes=($(get_nodes))
-
   _show_alloc_header
 
-  for node in "${nodes[@]}"; do
+  for node in $(get_nodes); do
     _show_alloc_result $node $(get_allocated_memory_for_node $node) $(get_total_memory_for_node $node)
   done
 }

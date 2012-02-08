@@ -1,25 +1,29 @@
+function _show_alloc_header() {
+  printf "%-10s %-10s %-10s %-10s\n" "Node" "Allocated" "Total" "Percent Used"
+  echo "---------------------------------------------"
+}
+
+function _show_alloc_result() {
+  local node=$1
+  local alloc=$2
+  local total=$3
+  local percent_used="$(echo "($alloc / $total) * 100"|bc -l)"
+
+  printf "%-10s %-10s %-10s %-10.2f\n" $node $alloc $total $percent_used
+}
+
 function get_nodes() {
   echo $(scontrol -o show node|awk {'print $1'}|cut -d\= -f2)
 }
 
-function get_total_cores() {
-  local total_cores=0
-
-  for i in $(scontrol -o show node|cut -d\  -f6|cut -d\= -f2); do
-    total_cores=$(($total_cores + $i))
-  done
-
-  echo $total_cores
+function get_total_cores_for_node() {
+  local node=$1
+  echo $(scontrol -o show node $node|cut -d\  -f6|cut -d\= -f2)
 }
 
-function get_allocated_cores() {
-  local allocated_cores=0
-
-  for i in $(scontrol -o show node|cut -d\  -f4|cut -d\= -f2); do
-    allocated_cores=$(($allocated_cores + $i))
-  done
-
-  echo $allocated_cores
+function get_allocated_cores_for_node() {
+  local node=$1
+  echo $(scontrol -o show node $1|cut -d\  -f4|cut -d\= -f2)
 }
 
 function get_total_memory_for_node() {
@@ -34,6 +38,7 @@ function get_allocated_memory_for_node() {
   for i in $(show_jobs_for_node $node|grep 'Mem='|awk {'print $3'}|cut -d\= -f2); do
     allocated_memory=$(($allocated_memory + $i))
   done 
+
   echo $allocated_memory
 }
 
@@ -66,42 +71,35 @@ function hold_jobs_for_user() {
 }
 
 function show_core_alloc() {
-  allocated=$(get_allocated_cores)
-  total=$(get_total_cores)
-  percent_use_by_core=$(( ($allocated / $total) * 100 ))
-  percent_use_by_core="$(echo "($allocated / $total) * 100"|bc -l)"
+  local nodes=($(get_nodes))
 
-  echo "Overall Core Usage"
-  echo "----------------------"
-  printf "%-16s %5d\n" "Allocated:" $allocated
-  printf "%-16s %5d\n" "Total:" $total
-  printf "%-16s %5.2f\n" "Percent by core:" $percent_use_by_core
+  _show_alloc_header
+
+  for node in "${nodes[@]}"; do
+    _show_alloc_result $node $(get_allocated_cores_for_node $node) $(get_total_cores_for_node $node)
+  done
+}
+
+function show_core_alloc_for_node() {
+  local node=$1
+
+  _show_alloc_header
+  _show_alloc_result $node $(get_allocated_cores_for_node $node) $(get_total_cores_for_node $node)
 }
 
 function show_mem_alloc() {
   local nodes=($(get_nodes))
 
-  printf "%-10s %-10s %-10s %-10s\n" "Node" "Allocated" "Total" "Percent Used"
-  echo "---------------------------------------------"
+  _show_alloc_header
 
   for node in "${nodes[@]}"; do
-    local total=$(get_total_memory_for_node $node)
-    local alloc=$(get_allocated_memory_for_node $node)
-    local percent_used="$(echo "($alloc / $total) * 100"|bc -l)"
-
-    printf "%-10s %-10s %-10s %-10.2f\n" $node $alloc $total $percent_used
+    _show_alloc_result $node $(get_allocated_memory_for_node $node) $(get_total_memory_for_node $node)
   done
 }
 
 function show_mem_alloc_for_node() {
   local node=$1
-  local alloc=0
-  local total=$(get_total_memory_for_node $node)
-  local alloc=$(get_allocated_memory_for_node $node)
-  local percent_used="$(echo "($alloc / $total) * 100"|bc -l)"
 
-  printf "Node: %13s\n" $node
-  printf "Allocated: %8d\n" $alloc
-  printf "Total: %12d\n" $total
-  printf "Percent used: %4.2f%%\n" $percent_used
+  _show_alloc_header
+  _show_alloc_result $node  $(get_allocated_memory_for_node $node) $(get_total_memory_for_node $node)
 }

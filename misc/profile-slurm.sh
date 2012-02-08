@@ -73,9 +73,9 @@ function show_core_alloc() {
 
   echo "Overall Core Usage"
   echo "----------------------"
-  printf "Allocated: %9d\n" $allocated
-  printf "Total: %13d\n" $total
-  printf "Percent by core: %4.2f%%\n" $percent_use_by_core
+  printf "%-16s %5d\n" "Allocated:" $allocated
+  printf "%-16s %5d\n" "Total:" $total
+  printf "%-16s %5.2f\n" "Percent by core:" $percent_use_by_core
 }
 
 function show_mem_alloc() {

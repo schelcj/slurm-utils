@@ -103,3 +103,19 @@ function show_mem_alloc_for_node() {
   _show_alloc_header
   _show_alloc_result $node  $(get_allocated_memory_for_node $node) $(get_total_memory_for_node $node)
 }
+
+function show_core_mem_alloc() {
+  printf "%-10s %-10s %-10s %-15s %-10s %-10s %-10s\n" "Node" "AllocCPU" "TotalCPU" "PercentUsedCPU" "AllocMem" "TotalMem" "PercentUsedMem"
+  echo "-------------------------------------------------------------------------------------"
+  
+  for node in $(get_nodes); do
+    local core_alloc=$(get_allocated_cores_for_node $node)
+    local core_total=$(get_total_cores_for_node $node)
+    local mem_alloc=$(get_allocated_memory_for_node $node)
+    local mem_total=$(get_total_memory_for_node $node)
+    local core_perc="$(echo "($core_alloc / $core_total) * 100"|bc -l)"
+    local mem_perc="$(echo "($mem_alloc / $mem_total) * 100"|bc -l)"
+
+    printf "%-10s %-10s %-10s %-15.2f %-10s %-10s %-10.2f\n" $node $core_alloc $core_total $core_perc $mem_alloc $mem_total $mem_perc
+  done
+}

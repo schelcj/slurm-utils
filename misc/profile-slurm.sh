@@ -9,9 +9,8 @@ function _show_alloc_result() {
   local node=$1
   local alloc=$2
   local total=$3
-  local percent_used="$(echo "($alloc / $total) * 100"|bc -l)"
 
-  printf "%-10s %-10s %-10s %-10.2f\n" $node $alloc $total $percent_used
+  printf "%-10s %-10s %-10s %-10.2f\n" $node $alloc $total $(_get_percent_used $alloc $total)
 }
 
 function _build_node_attrs() {
@@ -23,6 +22,10 @@ function _build_node_attrs() {
 
     _node_attrs[$name]=$val
   done
+}
+
+function _get_percent_used() {
+  printf '%.2f' $(echo "($1 / $2) * 100"|bc -l)
 }
 
 function get_nodes() {
@@ -83,13 +86,6 @@ function show_jobs_for_part() {
   done
 }
 
-function hold_jobs_for_user() {
-  local user=$1
-  for i in $(sprio -l -u $user -h -o %i); do
-    sudo scontrol update JobId=${i} Priority=0
-  done
-}
-
 function show_core_alloc() {
   _show_alloc_header
 
@@ -129,8 +125,8 @@ function show_core_mem_alloc() {
     local core_total=$(get_total_cores_for_node $node)
     local mem_alloc=$(get_allocated_memory_for_node $node)
     local mem_total=$(get_total_memory_for_node $node)
-    local core_perc="$(echo "($core_alloc / $core_total) * 100"|bc -l)"
-    local mem_perc="$(echo "($mem_alloc / $mem_total) * 100"|bc -l)"
+    local core_perc="$(_get_percent_used $core_alloc $core_total)"
+    local mem_perc="$(_get_percent_used $mem_alloc $mem_total)"
 
     printf "%-10s %-10s %-10s %-15.2f %-10s %-10s %-10.2f\n" $node $core_alloc $core_total $core_perc $mem_alloc $mem_total $mem_perc
   done

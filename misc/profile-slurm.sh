@@ -1,3 +1,5 @@
+declare -A _node_attrs
+
 function _show_alloc_header() {
   printf "%-10s %-10s %-10s %-10s\n" "Node" "Allocated" "Total" "Percent Used"
   echo "---------------------------------------------"
@@ -12,23 +14,41 @@ function _show_alloc_result() {
   printf "%-10s %-10s %-10s %-10.2f\n" $node $alloc $total $percent_used
 }
 
+function _build_node_attrs() {
+  local node=$1
+
+  for attr in $(scontrol -o show node $node); do
+    name=$(echo $attr|cut -d\= -f1)
+    val=$(echo $attr|cut -d\= -f2)
+
+    _node_attrs[$name]=$val
+  done
+}
+
 function get_nodes() {
   echo $(scontrol -o show node|awk {'print $1'}|cut -d\= -f2)
 }
 
+function get_node_attr() {
+  local node=$1
+  local item=$2
+  _build_node_attrs $node
+  echo "${_node_attrs[$item]}"
+}
+
 function get_total_cores_for_node() {
   local node=$1
-  echo $(scontrol -o show node $node|cut -d\  -f6|cut -d\= -f2)
+  echo $(get_node_attr $node "CPUTot")
 }
 
 function get_allocated_cores_for_node() {
   local node=$1
-  echo $(scontrol -o show node $node|cut -d\  -f4|cut -d\= -f2)
+  echo $(get_node_attr $node "CPUAlloc")
 }
 
 function get_total_memory_for_node() {
   local node=$1
-  echo $(scontrol show node $node|grep 'RealMem'|awk {'print $2'}|cut -d\= -f2)
+  echo $(get_node_attr $node "RealMemory")
 }
 
 function get_allocated_memory_for_node() {

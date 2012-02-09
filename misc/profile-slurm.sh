@@ -32,6 +32,10 @@ function get_nodes() {
   echo $(scontrol -o show node|awk {'print $1'}|cut -d\= -f2)
 }
 
+function get_users() {
+  echo "$(sacctmgr -n -p show users|grep -v root|cut -d\| -f1)" 
+}
+
 function get_node_attr() {
   local node=$1
   local item=$2
@@ -47,6 +51,16 @@ function get_total_cores_for_node() {
 function get_allocated_cores_for_node() {
   local node=$1
   echo $(get_node_attr $node "CPUAlloc")
+}
+
+function get_total_cores_for_cluster() {
+  local total=0
+
+  for node in $(get_nodes); do
+    $total=$(( $total + $(get_total_cores_for_node $node) ))
+  done
+
+  echo $total
 }
 
 function get_total_memory_for_node() {

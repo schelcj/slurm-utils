@@ -57,7 +57,7 @@ function get_total_cores_for_cluster() {
   local total=0
 
   for node in $(get_nodes); do
-    $total=$(( $total + $(get_total_cores_for_node $node) ))
+    total=$(( $total + $(get_total_cores_for_node $node) ))
   done
 
   echo $total

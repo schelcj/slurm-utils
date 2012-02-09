@@ -79,6 +79,16 @@ function get_allocated_memory_for_node() {
   echo $allocated_memory
 }
 
+function set_user_grpcpus() {
+  total_cores=$(get_total_cores_for_cluster)
+  total_core_percentage=75
+  max_cores="$(printf '%0.f' $(echo "$total_cores * (0.01 * $total_core_percentage)"|bc))"
+
+  for user in $(get_users); do
+    echo "sacctmgr -i update user where name=${user} set grpcpus=${max_cores}"
+  done
+}
+
 function show_jobs_for_user() {
   local user=$1
   for i in $(squeue -h -u $user -o %i); do

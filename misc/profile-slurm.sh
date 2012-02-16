@@ -81,7 +81,7 @@ function get_allocated_memory_for_node() {
 
 function set_user_grpcpus() {
   total_cores=$(get_total_cores_for_cluster)
-  total_core_percentage=75
+  total_core_percentage=$1
   max_cores="$(printf '%0.f' $(echo "$total_cores * (0.01 * $total_core_percentage)"|bc))"
 
   for user in $(get_users); do

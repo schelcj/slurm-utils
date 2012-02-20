@@ -155,3 +155,10 @@ function show_core_mem_alloc() {
     printf "%-10s %-10s %-10s %-15.2f %-10s %-10s %-10.2f\n" $node $core_alloc $core_total $core_perc $mem_alloc $mem_total $mem_perc
   done
 }
+
+function show_sstat_for_user() {
+  local user=$1
+  local jobs=($(squeue -h -t r -u $user|awk {'print $1'}))
+  
+  sstat -a -j $(echo ${jobs[*]}|tr ' ' ',')
+}

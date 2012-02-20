@@ -166,11 +166,11 @@ function show_sstat_for_user() {
   local user=$1
   local jobs=($(squeue -h -t r -u $user|awk {'print $1'}))
 
-  sstat -a -j _join "," $jobs
+  sstat -a -j $(_join "," $jobs)
 }
 
 function show_sstat_for_jobs() {
   local jobs=($(squeue -h -t r|awk {'print $1'}))
 
-  sstat -a -j _join "," $jobs
+  sstat -a -j $(_join "," $jobs)
 }

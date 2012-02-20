@@ -1,11 +1,5 @@
 declare -A _node_attrs
 
-function _join() {
-  local delim=$1
-  local list=$2
-  echo "$(echo ${list[*]}|tr ' ' '$delim')"
-}
-
 function _show_alloc_header() {
   printf "%-10s %-10s %-10s %-10s\n" "Node" "Allocated" "Total" "Percent Used"
   echo "---------------------------------------------"
@@ -166,11 +160,11 @@ function show_sstat_for_user() {
   local user=$1
   local jobs=($(squeue -h -t r -u $user|awk {'print $1'}))
 
-  sstat -a -j $(_join "," $jobs)
+  sstat -a -j $(echo ${jobs[*]}|tr ' ' ',')
 }
 
 function show_sstat_for_jobs() {
   local jobs=($(squeue -h -t r|awk {'print $1'}))
 
-  sstat -a -j $(_join "," $jobs)
+  sstat -a -j $(echo ${jobs[*]}|tr ' ' ',')
 }

@@ -98,14 +98,14 @@ function show_jobs_for_user() {
 
 function show_jobs_for_node() {
   local node=$1
-  for i in $(squeue -h -n $node -o %i); do
+  for i in $(squeue -h -w $node -o %i); do
     scontrol -d show job $i
   done
 }
 
 function show_jobs_for_part() {
   local part=$1
-  for i in $(squeue -n -p $part -o %i); do
+  for i in $(squeue -p $part -o %i); do
     scontrol -d show job $i
   done
 }

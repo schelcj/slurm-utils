@@ -1,8 +1,18 @@
+# TODO - I should rewrite this as a perl script. lots of extra here tha doesn't need to be done
 declare -A _node_attrs
 
 function _show_alloc_header() {
   printf "%-10s %-10s %-10s %-10s\n" "Node" "Allocated" "Total" "Percent Used"
   echo "---------------------------------------------"
+}
+
+function _show_alloc_footer() {
+  local total_core_allocation=$(get_allocation_by_core)
+  local total_mem_allocation=$(get_allocation_by_mem)
+
+  echo "---------------------------------------------"
+  echo "Total cores allocated: $total_core_allocation%"
+  echo "Total memory allcated: $total_mem_allocation%"
 }
 
 function _show_alloc_result() {
@@ -68,6 +78,16 @@ function get_total_memory_for_node() {
   echo $(get_node_attr $node "RealMemory")
 }
 
+function get_total_memory_for_cluster() {
+  local total=0
+
+  for node in $(get_nodes); do
+    total=$(($total + $(get_total_memory_for_node $node)))
+  done
+
+  echo $total
+}
+
 function get_allocated_memory_for_node() {
   local node=$1
   local allocated_memory=0
@@ -79,14 +99,40 @@ function get_allocated_memory_for_node() {
   echo $allocated_memory
 }
 
+function get_allocation_by_core() {
+  local total_allocated_cores=0
+  local total_cores=$(get_total_cores_for_cluster)
+  for node in $(get_nodes); do
+    total_allocated_cores=$(($total_allocated_cores + $(get_allocated_cores_for_node $node)))
+  done
+
+  allocation_percent="$(echo "scale=4; (($total_allocated_cores / $total_cores) * 100)"|bc)"
+  echo $(printf '%.2f' $allocation_percent)
+}
+
+function get_allocation_by_mem() {
+  local total_allocated_memory=0
+  local total_memory=$(get_total_memory_for_cluster)
+
+  for node in $(get_nodes); do
+    total_allocated_memory=$(($total_allocated_memory + $(get_allocated_memory_for_node $node)))
+  done
+
+  allocation_percent="$(echo "scale=4; (($total_allocated_memory / $total_memory) * 100)"|bc)"
+  echo $(printf '%.2f' $allocation_percent)
+}
+
 function set_user_grpcpus() {
-  total_cores=$(get_total_cores_for_cluster)
   total_core_percentage=$1
+  if [ -z $total_core_percentage ]; then
+    echo "Please specifiy a percentage!"
+    return 
+  fi
+
+  total_cores=$(get_total_cores_for_cluster)
   max_cores="$(printf '%0.f' $(echo "$total_cores * (0.01 * $total_core_percentage)"|bc))"
 
-  for user in $(get_users); do
-    echo "sacctmgr -i update user where name=${user} set grpcpus=${max_cores}"
-  done
+  echo "sacctmgr update qos name=biostat set grpcpus=${max_cores}"
 }
 
 function show_jobs_for_user() {
@@ -154,6 +200,8 @@ function show_core_mem_alloc() {
 
     printf "%-10s %-10s %-10s %-15.2f %-10s %-10s %-10.2f\n" $node $core_alloc $core_total $core_perc $mem_alloc $mem_total $mem_perc
   done
+
+  _show_alloc_footer
 }
 
 function show_sstat_for_user() {

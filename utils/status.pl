@@ -5,7 +5,7 @@ use Readonly;
 use Slurm;
 
 Readonly::Scalar my $INT     => 2**31;
-Readonly::Scalar my $ROW     => q{-} x 85;
+Readonly::Scalar my $HR      => q{-} x 85;
 Readonly::Scalar my $ROW_FMT => qq{%-10s %-10s %-10s %-15s %-10s %-10s %-10s\n};
 Readonly::Array  my @HEADERS => (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem));
 
@@ -18,12 +18,11 @@ my $total_allocated_mem   = 0;
 my $total_cores           = 0;
 my $total_mem             = 0;
 
-say $ROW;
+say $HR;
 printf $ROW_FMT, @HEADERS;
-say $ROW;
+say $HR;
 
 for my $node (@{$nodes->{node_array}}) {
-  my @line = ();
   my $allocated_memory = _get_allocated_memory_for_node($node->{name});
 
   $total_allocated_cores += $node->{alloc_cpus};
@@ -31,20 +30,20 @@ for my $node (@{$nodes->{node_array}}) {
   $total_cores           += $node->{cpus};
   $total_mem             += $node->{real_memory};
 
-  push @line, $node->{name};
-  push @line, $node->{alloc_cpus};
-  push @line, $node->{cpus};
-  push @line, _get_percentage($node->{alloc_cpus}, $node->{cpus});
-  push @line, $allocated_memory;
-  push @line, $node->{real_memory};
-  push @line, _get_percentage($allocated_memory, $node->{real_memory});
-
-  printf $ROW_FMT, @line;
+  printf $ROW_FMT,
+    $node->{name},
+    $node->{alloc_cpus},
+    $node->{cpus},
+    _get_percentage($node->{alloc_cpus}, $node->{cpus}),
+    $allocated_memory,
+    $node->{real_memory},
+    _get_percentage($allocated_memory, $node->{real_memory});
 }
 
-say $ROW;
+say $HR;
 say 'Totals:';
-say $ROW;
+say $HR;
+
 printf $ROW_FMT,
   scalar @{$nodes->{node_array}},
   $total_allocated_cores,

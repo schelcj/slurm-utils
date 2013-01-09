@@ -23,7 +23,7 @@
       data that isn't directly accessible.
 
 ## utils ##
-  * __cluster##status.pl__
+  * __cluster_status.pl__
       Displays a table of nodes with cores total and allocated and memory
       allocated and total with overall totals.
 

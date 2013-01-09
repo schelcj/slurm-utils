@@ -15,19 +15,23 @@
 
 ## plugins ##
   * __job_submit.bigmem.lua__
+
       Plugin to enforce minimum memory allocations in the bigmem partition
 
 ## misc ##
   * __profile-slurm.sh__
+
       Just a few bash functions I include in my login env to pull out some
       data that isn't directly accessible.
 
 ## utils ##
   * __cluster_status.pl__
+
       Displays a table of nodes with cores total and allocated and memory
       allocated and total with overall totals.
 
 ---
 
 Chris Scheller <schelcj@umich.edu>
+
 Copyright (C) 2011, all rights reserved by University of Michigan

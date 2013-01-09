@@ -20,5 +20,10 @@ Various Slurm utilities and plugins.
     Just a few bash functions I include in my login env to pull out some
     data that isn't directly accessible.
 
+* utils
+  * cluster_status.pl
+    Displays a table of nodes with cores total and allocated and memory
+    allocated and total with overall totals.
+
 Chris Scheller <schelcj@umich.edu>
 Copyright (C) 2011, all rights reserved by University of Michigan

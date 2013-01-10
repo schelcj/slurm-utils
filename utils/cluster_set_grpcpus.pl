@@ -6,8 +6,7 @@ use Getopt::Compact;
 
 my $opts        = Getopt::Compact->new(struct => [[[qw(p percentage)], q{Percentage of total cores}, q{=i}]])->opts();
 
-warn "Percentage required" if not $opts->{percentage};
-exit 1;
+die "Percentage required" if not $opts->{percentage};
 
 my $qos         = 'biostat';
 my $slurm       = Slurm::new();

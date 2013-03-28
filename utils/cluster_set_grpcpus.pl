@@ -17,4 +17,4 @@ map {$total_cores += $_->{cpus}} @{$nodes->{node_array}};
 
 my $grpcpus = sprintf '%0.f', $total_cores * (0.01 * $opts->{percentage});
 
-say "sacctmgr update qos name=$qos set grpcpus=$grpcpus";
+say "sacctmgr update qos name=$qos set maxcpusperuser=$grpcpus";

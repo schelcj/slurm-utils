@@ -1,17 +1,18 @@
 #!/usr/bin/env perl
 
-use Modern::Perl;
-use Readonly;
+use 5.010_000;
+use strict;
+use warnings;
 use Slurm;
+use feature qw(say);
 
-Readonly::Scalar my $INT     => 2**31;
-Readonly::Scalar my $HR      => q{-} x 85;
-Readonly::Scalar my $ROW_FMT => qq{%-10s %-10s %-10s %-15s %-10s %-10s %-10s\n};
-Readonly::Array  my @HEADERS => (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem));
-
-my $slurm = Slurm::new();
-my $nodes = $slurm->load_node();
-my $jobs  = $slurm->load_jobs();
+my $INT     = 2**31;
+my $HR      = q{-} x 85;
+my $ROW_FMT = qq{%-10s %-10s %-10s %-15s %-10s %-10s %-10s\n};
+my @HEADERS = (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem));
+my $slurm   = Slurm::new();
+my $nodes   = $slurm->load_node();
+my $jobs    = $slurm->load_jobs();
 
 my $total_allocated_cores = 0;
 my $total_allocated_mem   = 0;
@@ -55,17 +56,18 @@ printf $ROW_FMT,
 
 sub _get_percentage {
   my ($used, $total) = @_;
-  return sprintf '%.2f', (($used / $total) * 100); ## no critic (ProhibitMagicNumbers)
+  return if not $total;
+  return sprintf '%.2f', (($used / $total) * 100);    ## no critic (ProhibitMagicNumbers)
 }
 
 sub _get_allocated_memory_for_node {
   my ($node) = @_;
-  my $total  = 0;
+  my $total = 0;
 
-  map  {$total += $_}
-  map  {($_->{pn_min_memory} > $INT) ? $_->{pn_min_memory} - $INT : $_->{pn_min_memory}}
-  grep {$_->{nodes} =~ $node}
-  grep {not IS_JOB_PENDING($_)} @{$jobs->{job_array}};
+  map {$total += $_}
+    map {($_->{pn_min_memory} > $INT) ? $_->{pn_min_memory} - $INT : $_->{pn_min_memory}}
+    grep {$_->{nodes} =~ $node}
+    grep {not IS_JOB_PENDING($_)} @{$jobs->{job_array}};
 
   return $total;
 }

@@ -33,9 +33,11 @@ foreach my $task_id (@task_ids) {
   );
 
   my $stdout = $cmd->stdout();
-  while (<$stdout>) {
-    print $_;
-  }
+  while (<$stdout>) { print $_; }
+
+  my $stderr = $cmd->stderr();
+  while (<$stderr>) { print $_; }
+
   $cmd->close();
 }
 

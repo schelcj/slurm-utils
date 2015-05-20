@@ -3,16 +3,16 @@
 use 5.010_000;
 use strict;
 use warnings;
-use Slurm;
+use Slurm qw(:constant);
 use feature qw(say);
 
 my $INT     = 2**31;
-my $HR      = q{-} x 85;
-my $ROW_FMT = qq{%-10s %-10s %-10s %-15s %-10s %-10s %-10s\n};
-my @HEADERS = (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem));
+my $HR      = q{-} x 95;
+my $ROW_FMT = qq{%-10s %-10s %-10s %-15s %-10s %-10s %-15s %-10s\n};
+my @HEADERS = (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem NodeState));
 my $slurm   = Slurm::new();
 my $nodes   = $slurm->load_node();
-my $jobs    = $slurm->load_jobs();
+my $jobs    = $slurm->load_jobs({flags => PART_FLAG_HIDDEN_CLR});
 
 my $total_allocated_cores = 0;
 my $total_allocated_mem   = 0;
@@ -24,6 +24,8 @@ printf $ROW_FMT, @HEADERS;
 say $HR;
 
 for my $node (@{$nodes->{node_array}}) {
+  next unless $node;
+
   my $allocated_memory = _get_allocated_memory_for_node($node->{name});
 
   $total_allocated_cores += $node->{alloc_cpus};
@@ -38,7 +40,8 @@ for my $node (@{$nodes->{node_array}}) {
     _get_percentage($node->{alloc_cpus}, $node->{cpus}),
     $allocated_memory,
     $node->{real_memory},
-    _get_percentage($allocated_memory, $node->{real_memory});
+    _get_percentage($allocated_memory, $node->{real_memory}),
+    $slurm->node_state_string($node->{node_state});
 }
 
 say $HR;
@@ -52,7 +55,8 @@ printf $ROW_FMT,
   _get_percentage($total_allocated_cores, $total_cores),
   $total_allocated_mem,
   $total_mem,
-  _get_percentage($total_allocated_mem, $total_mem);
+  _get_percentage($total_allocated_mem, $total_mem),
+  q{};
 
 sub _get_percentage {
   my ($used, $total) = @_;

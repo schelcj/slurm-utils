@@ -7,8 +7,8 @@ use Slurm qw(:constant);
 use feature qw(say);
 
 my $INT     = 2**31;
-my $HR      = q{-} x 96;
-my $ROW_FMT = qq{%-10s %-10s %-10s %-15s %-10s %-10s %-15s %-10s\n};
+my $HR      = q{-} x 106;
+my $ROW_FMT = qq{%-20s %-10s %-10s %-15s %-10s %-10s %-15s %-10s\n};
 my @HEADERS = (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem NodeState));
 my $slurm   = Slurm::new();
 my $nodes   = $slurm->load_node();

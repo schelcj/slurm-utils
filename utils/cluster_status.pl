@@ -5,17 +5,15 @@ use strict;
 use warnings;
 use feature qw(say);
 
-use Getopt::Long;
+use Getopt::Long qw(HelpMessage);
 use Slurm qw(:constant);
 use Slurm::Hostlist;
 
-my $partition = undef;
-my $state     = undef;
-
 GetOptions(
-  "partition=s" => \$partition,
-  "state=s"     => \$state,
-);
+  'partition=s' => \my $partition,
+  'state=s'     => \my $state,
+  'help'        => sub { HelpMessage(0) },
+) or HelpMessage(1);
 
 my $INT             = 2**31;
 my $HR              = q{-} x 106;
@@ -110,3 +108,21 @@ sub _get_allocated_memory_for_node {
 
   return $total;
 }
+
+__END__
+
+=head1 NAME
+
+sstate - Print state of Slurm cluster nodes
+
+=head1 SYNOPSIS
+
+  -p, --partition=name Limit nodes to a specific partition
+  -s, --state=state    Limit nodes to a specific state (ie; DOWN, DRAINED)
+  -h, --head           Print this help
+
+=head1 VERSION
+
+0.9
+
+=cut

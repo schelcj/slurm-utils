@@ -68,7 +68,7 @@ for my $node (@{$nodes->{node_array}}) {
     $node->{alloc_cpus},
     $node->{cpus},
     _get_percentage($node->{alloc_cpus}, $node->{cpus}),
-    $node->{cpu_load} / 100,
+    ($node_state ne 'DOWN') ? $node->{cpu_load} / 100 : 0,
     $allocated_memory,
     $node->{real_memory},
     _get_percentage($allocated_memory, $node->{real_memory}),

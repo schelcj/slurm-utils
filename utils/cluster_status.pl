@@ -111,7 +111,7 @@ sub _get_allocated_memory_for_node {
 
   map {$total += $_}
     map {($_->{pn_min_memory} > $INT) ? $_->{pn_min_memory} - $INT : $_->{pn_min_memory}}
-    grep {$_->{nodes} =~ $node}
+    grep {$_->{nodes} =~ /^$node$/}
     grep {not IS_JOB_PENDING($_)} @{$jobs->{job_array}};
 
   return $total;

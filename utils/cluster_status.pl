@@ -16,13 +16,14 @@ GetOptions(
 ) or HelpMessage(1);
 
 my $INT             = 2**31;
-my $HR              = q{-} x 106;
-my $ROW_FMT         = qq{%-20s %-10s %-10s %-15s %-10s %-10s %-15s %-10s\n};
-my @HEADERS         = (qw(Node AllocCPU TotalCPU PercentUsedCPU AllocMem TotalMem PercentUsedMem NodeState));
+my $HR              = q{-} x 117;
+my $ROW_FMT         = qq{%-20s %-10s %-10s %-15s %-10s %-10s %-10s %-15s %-10s\n};
+my @HEADERS         = (qw(Node AllocCPU TotalCPU PercentUsedCPU CPULoad AllocMem TotalMem PercentUsedMem NodeState));
 my $slurm           = Slurm::new();
 my $nodes           = $slurm->load_node();
 my $jobs            = $slurm->load_jobs({flags => PART_FLAG_HIDDEN_CLR});
 my @partition_nodes = ();
+my @rows            = ();
 
 my $total_nodes           = 0;
 my $total_allocated_cores = 0;
@@ -44,10 +45,6 @@ if ($partition) {
   }
 }
 
-say $HR;
-printf $ROW_FMT, @HEADERS;
-say $HR;
-
 for my $node (@{$nodes->{node_array}}) {
   next unless $node;
 
@@ -56,7 +53,7 @@ for my $node (@{$nodes->{node_array}}) {
   }
 
   my $node_state = $slurm->node_state_string($node->{node_state});
-  next if $state and $state !~ /$node_state/i;
+  next if $state and $node_state !~ /$state/i;
 
   my $allocated_memory = _get_allocated_memory_for_node($node->{name});
 
@@ -66,30 +63,41 @@ for my $node (@{$nodes->{node_array}}) {
   $total_cores           += $node->{cpus};
   $total_mem             += $node->{real_memory};
 
-  printf $ROW_FMT,
+  push @rows, sprintf $ROW_FMT,
     $node->{name},
     $node->{alloc_cpus},
     $node->{cpus},
     _get_percentage($node->{alloc_cpus}, $node->{cpus}),
+    $node->{cpu_load} / 100,
     $allocated_memory,
     $node->{real_memory},
     _get_percentage($allocated_memory, $node->{real_memory}),
     $node_state;
 }
 
-say $HR;
-say 'Totals:';
-say $HR;
+if (@rows) {
+  say $HR;
+  printf $ROW_FMT, @HEADERS;
+  say $HR;
 
-printf $ROW_FMT,
-  $total_nodes,
-  $total_allocated_cores,
-  $total_cores,
-  _get_percentage($total_allocated_cores, $total_cores) // 0,
-  $total_allocated_mem,
-  $total_mem,
-  _get_percentage($total_allocated_mem, $total_mem) // 0,
-  q{};
+  print $_ for @rows;
+
+  say $HR;
+  say 'Totals:';
+  printf $ROW_FMT, @HEADERS;
+  say $HR;
+
+  printf $ROW_FMT,
+    $total_nodes,
+    $total_allocated_cores,
+    $total_cores,
+    _get_percentage($total_allocated_cores, $total_cores) // 0,
+    q{},
+    $total_allocated_mem,
+    $total_mem,
+    _get_percentage($total_allocated_mem, $total_mem) // 0,
+    q{};
+}
 
 sub _get_percentage {
   my ($used, $total) = @_;
@@ -119,7 +127,7 @@ sstate - Print state of Slurm cluster nodes
 
   -p, --partition=name Limit nodes to a specific partition
   -s, --state=state    Limit nodes to a specific state (ie; DOWN, DRAINED)
-  -h, --head           Print this help
+  -h, --help           Print this help
 
 =head1 VERSION
 
